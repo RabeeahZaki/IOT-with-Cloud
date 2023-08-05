@@ -1,0 +1,42 @@
+import BlynkLib
+import network
+import machine
+import time
+from machine import Pin
+
+
+led1=Pin(2,Pin.OUT)
+
+
+def do_connect():
+    sta_if = network.WLAN(network.STA_IF)
+    if not sta_if.isconnected():
+        print('connecting to network...')
+        sta_if.active(True)
+        print(sta_if.scan())
+        sta_if.connect("PC_IOT", "123456789")
+        while not sta_if.isconnected():
+            pass
+    print('network config:', sta_if.ifconfig())
+do_connect()
+
+BLYNK_AUTH = "9npndRyLxmdw-IlfXbWsGrYKmTtYdXYc"
+
+blynk = BlynkLib.Blynk(BLYNK_AUTH)
+
+@blynk.on("connected")
+def blynk_connected(ping):
+    print("Connecting.................")
+    print('Blynk ready. Ping:', ping, 'ms')
+    print("Connected!")
+   
+@blynk.on("V0")
+def terminal_write_handler(value):
+    if int(value[0])==1:
+        led1.on()
+    else:
+        led1.off()
+
+# Run blynk in the main thread:
+while True:
+    blynk.run()
